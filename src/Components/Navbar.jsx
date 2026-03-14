@@ -1,26 +1,33 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 
 const Navbar = () => {
   const navigate = useNavigate();
 
-  const user = JSON.parse(sessionStorage.getItem("user"));
+  const [user, setUser] = useState(null);
+
+  useEffect(() => {
+    const storedUser = JSON.parse(sessionStorage.getItem("user"));
+    setUser(storedUser);
+  }, []);
+
   const isAdmin = user?.role === "ADMIN";
 
   const logout = () => {
     sessionStorage.removeItem("user");
+    localStorage.removeItem("token");
+    setUser(null);
     navigate("/login");
   };
 
   return (
     <nav className="navbar navbar-expand-lg navbar-dark bg-dark shadow sticky-top">
       <div className="container-fluid px-4">
-        {/* Logo */}
+
         <Link className="navbar-brand fw-bold fs-4" to="/">
           🛍 MyStore
         </Link>
 
-        {/* Mobile Toggle */}
         <button
           className="navbar-toggler"
           type="button"
@@ -31,54 +38,33 @@ const Navbar = () => {
         </button>
 
         <div className="collapse navbar-collapse" id="navbarNav">
+
           {/* Left Menu */}
           <ul className="navbar-nav me-auto">
             <li className="nav-item">
-              <Link className="nav-link fw-semibold" to="/">
-                Home
-              </Link>
+              <Link className="nav-link fw-semibold" to="/">Home</Link>
             </li>
 
             <li className="nav-item">
-              <Link className="nav-link fw-semibold" to="/products">
-                Products
-              </Link>
+              <Link className="nav-link fw-semibold" to="/products">Products</Link>
             </li>
 
             <li className="nav-item">
-              <Link
-                className="nav-link fw-semibold position-relative"
-                to="/cart"
-              >
-                Cart
-              </Link>
-            </li>
-            <li className="nav-item">
-              <Link
-                className="nav-link fw-semibold position-relative"
-                to="/Orders"
-              >
-                Orders
-              </Link>
+              <Link className="nav-link fw-semibold" to="/cart">Cart</Link>
             </li>
 
             <li className="nav-item">
-              <Link
-                className="nav-link fw-semibold position-relative"
-                to="/wishlist"
-              >
-                Wishlist
-              </Link>
+              <Link className="nav-link fw-semibold" to="/orders">Orders</Link>
             </li>
 
-             <li className="nav-item">
-              <Link
-                className="nav-link fw-semibold position-relative"
-                to="/profile"
-              >
-                Profile
-              </Link>
+            <li className="nav-item">
+              <Link className="nav-link fw-semibold" to="/wishlist">Wishlist</Link>
             </li>
+
+            <li className="nav-item">
+              <Link className="nav-link fw-semibold" to="/profile">Profile</Link>
+            </li>
+
             {isAdmin && (
               <li className="nav-item">
                 <Link className="nav-link text-warning fw-bold" to="/admin">
@@ -113,6 +99,7 @@ const Navbar = () => {
               </li>
             )}
           </ul>
+
         </div>
       </div>
     </nav>
