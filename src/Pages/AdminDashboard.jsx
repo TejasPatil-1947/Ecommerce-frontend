@@ -5,12 +5,13 @@ import { productService } from "../Services/ProductService";
 import orderService from "../Services/OrderService";
 import AddressService from "../Services/AddressService";
 import addressService from "../Services/AddressService";
+import userService from "../Services/UserService";
 
 const AdminDashboard = () => {
   const [products, setProducts] = useState([]);
   const [orders, setOrders] = useState([]);
   const [categories, setCategories] = useState([]);
-
+  const [users, setUsers] = useState([]);
   const [selectedCategory, setSelectedCategory] = useState("");
 
   const [category, setCategory] = useState({
@@ -18,7 +19,14 @@ const AdminDashboard = () => {
     description: "",
     status: true,
   });
-
+  const loadUsers = async () => {
+    try {
+      const data = await userService.getAllUsers();
+      setUsers(data);
+    } catch (error) {
+      console.error("Error loading users", error);
+    }
+  };
   const [showDeactivate, setShowDeactivate] = useState(false);
   const [oldCategory, setOldCategory] = useState("");
   const [newCategory, setNewCategory] = useState("");
@@ -37,7 +45,7 @@ const AdminDashboard = () => {
 
     try {
       const res = await addressService.getAddressByUser(order.user.id);
-      console.log(res , "address");
+      console.log(res, "address");
       setAddress(res);
     } catch (error) {
       console.error("Error fetching address", error);
@@ -49,7 +57,24 @@ const AdminDashboard = () => {
     loadProducts();
     loadOrders();
     loadCategories();
+    loadUsers();
   }, []);
+
+  const toggleUserStatus = async (userId, status) => {
+    try {
+      if (status === "ACTIVE") {
+        await userService.deactivateUser(userId);
+        alert("User deactivated");
+      } else {
+        await userService.activateUser(userId);
+        alert("User activated");
+      }
+
+      loadUsers();
+    } catch (error) {
+      console.error("Error updating user status", error);
+    }
+  };
 
   // Load Products
   const loadProducts = async () => {
@@ -548,6 +573,68 @@ const AdminDashboard = () => {
                       >
                         Delete
                       </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        {/* Users Table */}
+
+        {/* USERS TABLE */}
+
+        <div className="card shadow mb-4">
+          <div className="card-header bg-info text-white fw-bold">
+            All Users
+          </div>
+
+          <div className="table-responsive">
+            <table className="table table-striped">
+              <thead className="table-dark">
+                <tr>
+                  <th>ID</th>
+                  <th>Name</th>
+                  <th>Email</th>
+                  <th>Role</th>
+                  <th>Status</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+
+              <tbody>
+                {users.map((u) => (
+                  <tr key={u.id}>
+                    <td>{u.id}</td>
+                    <td>{u.name}</td>
+                    <td>{u.email}</td>
+                    <td>{u.role}</td>
+
+                    <td>
+                      {u.status === "ACTIVE" ? (
+                        <span className="badge bg-success">ACTIVE</span>
+                      ) : (
+                        <span className="badge bg-danger">INACTIVE</span>
+                      )}
+                    </td>
+
+                    <td>
+                      {u.status === "ACTIVE" ? (
+                        <button
+                          className="btn btn-danger btn-sm"
+                          onClick={() => toggleUserStatus(u.id, u.status)}
+                        >
+                          Deactivate
+                        </button>
+                      ) : (
+                        <button
+                          className="btn btn-success btn-sm"
+                          onClick={() => toggleUserStatus(u.id, u.status)}
+                        >
+                          Activate
+                        </button>
+                      )}
                     </td>
                   </tr>
                 ))}

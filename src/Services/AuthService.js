@@ -1,7 +1,7 @@
 import axios from "axios";
-
-const BASE_URL = "https://ecommerce-production-744f.up.railway.app";
-// const BASE_URL="http://localhost:8080"
+// 
+// const BASE_URL = "https://ecommerce-production-744f.up.railway.app";
+const BASE_URL="http://localhost:8080"
 
 /* ================= AXIOS INSTANCE ================= */
 
@@ -42,13 +42,13 @@ api.interceptors.response.use(
       switch (error.response.status) {
         case 401:
           console.error("Unauthorized - redirecting to login");
-          authService.logout();
-          window.location.href = "/login";
+          // authService.logout();
+          // window.location.href = "/login";
           break;
 
         case 403:
           console.error("Forbidden access");
-          window.location.href = "/login";
+          // window.location.href = "/login";
           break;
 
         case 404:

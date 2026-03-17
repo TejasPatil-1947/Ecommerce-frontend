@@ -4,7 +4,6 @@ import { Link, useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 
 const Login = () => {
-
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
@@ -13,57 +12,51 @@ const Login = () => {
   const navigate = useNavigate();
 
   const handleLogin = async () => {
-
     setLoading(true);
 
     try {
-
       const token = await authService.login(email, password);
 
       localStorage.setItem("token", token);
 
       const user = await authService.currentUser();
 
+      if (user.status === "INACTIVE") {
+        alert("Your account is deactivated. Contact admin.");
+        return;
+      }
+
       toast.success("Login successful 🎉");
 
       navigate("/");
-
     } catch (error) {
-
       toast.error("Invalid email or password");
-
     } finally {
-
       setLoading(false);
-
     }
   };
 
   return (
-
     <div
       className="d-flex align-items-center justify-content-center"
       style={{
         minHeight: "100vh",
-        background: "linear-gradient(135deg,#0d6efd,#20c997)"
+        background: "linear-gradient(135deg,#0d6efd,#20c997)",
       }}
     >
-
       <div
         className="card shadow-lg"
         style={{
           width: "400px",
           borderRadius: "20px",
-          padding: "30px"
+          padding: "30px",
         }}
       >
-
         <div className="text-center mb-4">
           <h3 className="fw-bold text-primary">Login</h3>
         </div>
 
         <form>
-
           <div className="mb-3">
             <label className="form-label fw-semibold">Email</label>
 
@@ -95,7 +88,7 @@ const Login = () => {
             className="btn w-100 text-white fw-semibold"
             style={{
               background: "linear-gradient(90deg,#0d6efd,#20c997)",
-              borderRadius: "20px"
+              borderRadius: "20px",
             }}
           >
             {loading ? "Logging in..." : "Login"}
@@ -109,11 +102,8 @@ const Login = () => {
               </Link>
             </small>
           </div>
-
         </form>
-
       </div>
-
     </div>
   );
 };

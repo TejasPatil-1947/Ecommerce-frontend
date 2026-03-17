@@ -1,8 +1,8 @@
 
 import { api } from "./AuthService";
 
-const BASE_URL = "https://ecommerce-production-744f.up.railway.app/category";
-// const BASE_URL="http://localhost:8080/category"
+// const BASE_URL = "https://ecommerce-production-744f.up.railway.app/category";
+const BASE_URL="http://localhost:8080/category"
 
 const CategoryService = {
 
