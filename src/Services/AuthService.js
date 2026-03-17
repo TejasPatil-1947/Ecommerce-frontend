@@ -1,7 +1,7 @@
 import axios from "axios";
 
-// const BASE_URL = "https://ecommerce-production-744f.up.railway.app";
-const BASE_URL="http://localhost:8080"
+const BASE_URL = "https://ecommerce-production-744f.up.railway.app";
+// const BASE_URL="http://localhost:8080"
 
 /* ================= AXIOS INSTANCE ================= */
 
