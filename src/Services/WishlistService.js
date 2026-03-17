@@ -1,8 +1,8 @@
 import { api } from "./AuthService";
 
 
-const BASE_URL = "https://ecommerce-production-744f.up.railway.app/wishlist";
-
+// const BASE_URL = "https://ecommerce-production-744f.up.railway.app/wishlist";
+const BASE_URL="http://localhost:8080/wishlist"
 const wishlistService = {
 
   addToWishlist: async (userId, productId) => {

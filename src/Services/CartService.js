@@ -1,7 +1,8 @@
 import axios from "axios";
 import { api } from "./AuthService";
 
-const BASE_URL = "https://ecommerce-production-744f.up.railway.app/cart";
+// const BASE_URL = "https://ecommerce-production-744f.up.railway.app/cart";
+const BASE_URL="http://localhost:8080/cart"
 
 export const cartService = {
 

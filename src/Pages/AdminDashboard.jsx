@@ -3,6 +3,8 @@ import Navbar from "../Components/Navbar";
 import CategoryService from "../Services/CategoryService";
 import { productService } from "../Services/ProductService";
 import orderService from "../Services/OrderService";
+import AddressService from "../Services/AddressService";
+import addressService from "../Services/AddressService";
 
 const AdminDashboard = () => {
   const [products, setProducts] = useState([]);
@@ -20,7 +22,9 @@ const AdminDashboard = () => {
   const [showDeactivate, setShowDeactivate] = useState(false);
   const [oldCategory, setOldCategory] = useState("");
   const [newCategory, setNewCategory] = useState("");
-
+  const [statusFilter, setStatusFilter] = useState("ALL");
+  const [selectedOrder, setSelectedOrder] = useState(null);
+  const [address, setAddress] = useState(null);
   const [product, setProduct] = useState({
     name: "",
     description: "",
@@ -28,7 +32,17 @@ const AdminDashboard = () => {
     imageUrl: "",
     quantity: "",
   });
+  const viewOrder = async (order) => {
+    setSelectedOrder(order);
 
+    try {
+      const res = await addressService.getAddressByUser(order.user.id);
+      console.log(res , "address");
+      setAddress(res);
+    } catch (error) {
+      console.error("Error fetching address", error);
+    }
+  };
   const [editingId, setEditingId] = useState(null);
 
   useEffect(() => {
@@ -48,7 +62,15 @@ const AdminDashboard = () => {
     const data = await orderService.getAllOrders();
     setOrders(data);
   };
-
+  // Update Order Status
+  const changeOrderStatus = async (orderId, status) => {
+    try {
+      await orderService.updateOrderStatus(orderId, status);
+      loadOrders();
+    } catch (error) {
+      console.error("Error updating order status", error);
+    }
+  };
   // Load Categories
   const loadCategories = async () => {
     const data = await CategoryService.getAllCategories();
@@ -145,39 +167,42 @@ const AdminDashboard = () => {
 
   // Edit Product
   const handleEdit = (p) => {
+    setEditingId(p.id);
 
-  setEditingId(p.id);
+    setProduct({
+      name: p.name,
+      description: p.description,
+      price: p.price,
+      imageUrl: p.imageUrl,
+      quantity: p.quantity,
+    });
 
-  setProduct({
-    name: p.name,
-    description: p.description,
-    price: p.price,
-    imageUrl: p.imageUrl,
-    quantity: p.quantity
-  });
-
-  // VERY IMPORTANT
-  setSelectedCategory(p.category.id);
-};
+    // VERY IMPORTANT
+    setSelectedCategory(p.category.id);
+  };
   // Update Product
-const updateProduct = async () => {
+  const updateProduct = async () => {
+    await productService.updateProduct(editingId, selectedCategory, product);
 
-  await productService.updateProduct(editingId, selectedCategory, product);
+    setEditingId(null);
 
-  setEditingId(null);
+    setProduct({
+      name: "",
+      description: "",
+      price: "",
+      imageUrl: "",
+      quantity: "",
+    });
 
-  setProduct({
-    name: "",
-    description: "",
-    price: "",
-    imageUrl: "",
-    quantity: "",
-  });
+    setSelectedCategory("");
 
-  setSelectedCategory("");
+    loadProducts();
+  };
 
-  loadProducts();
-};
+  const filteredOrders =
+    statusFilter === "ALL"
+      ? orders
+      : orders.filter((o) => o.status === statusFilter);
   return (
     <div className="container-fluid">
       <Navbar />
@@ -515,7 +540,7 @@ const updateProduct = async () => {
                     <td>{p.quantity}</td>
 
                     <td>
-                    <button onClick={() => handleEdit(p)}>Edit</button>
+                      <button onClick={() => handleEdit(p)}>Edit</button>
 
                       <button
                         className="btn btn-sm btn-danger"
@@ -534,6 +559,21 @@ const updateProduct = async () => {
         {/* ORDERS TABLE */}
 
         <div className="card shadow">
+          <div className="mb-3">
+            <label className="me-2 fw-bold">Filter Orders:</label>
+
+            <select
+              className="form-control w-auto d-inline"
+              value={statusFilter}
+              onChange={(e) => setStatusFilter(e.target.value)}
+            >
+              <option value="ALL">All</option>
+              <option value="PENDING">Pending</option>
+              <option value="SHIPPED">Shipped</option>
+              <option value="DELIVERED">Delivered</option>
+              <option value="CANCELLED">Cancelled</option>
+            </select>
+          </div>
           <div className="card-header bg-success text-white fw-bold">
             All Orders
           </div>
@@ -546,23 +586,104 @@ const updateProduct = async () => {
                   <th>User</th>
                   <th>Total</th>
                   <th>Status</th>
+                  <th>Action</th>
                 </tr>
               </thead>
 
               <tbody>
-                {orders.map((o) => (
+                {filteredOrders.map((o) => (
                   <tr key={o.id}>
                     <td>{o.id}</td>
                     <td>{o.user?.name}</td>
                     <td>₹{o.totalAmount}</td>
 
                     <td>
-                      <span className="badge bg-success">{o.status}</span>
+                      <select
+                        className="form-control"
+                        value={o.status}
+                        onChange={(e) =>
+                          changeOrderStatus(o.id, e.target.value)
+                        }
+                      >
+                        <option value="PENDING">PENDING</option>
+                        <option value="SHIPPED">SHIPPED</option>
+                        <option value="DELIVERED">DELIVERED</option>
+                        <option value="CANCELLED">CANCELLED</option>
+                      </select>
+                    </td>
+                    <td>
+                      <button
+                        className="btn btn-sm btn-primary"
+                        onClick={() => viewOrder(o)}
+                      >
+                        View
+                      </button>
                     </td>
                   </tr>
                 ))}
               </tbody>
             </table>
+            {selectedOrder && (
+              <div className="modal show fade d-block">
+                <div className="modal-dialog">
+                  <div className="modal-content">
+                    <div className="modal-header">
+                      <h5 className="modal-title">Order Details</h5>
+                      <button
+                        className="btn-close"
+                        onClick={() => setSelectedOrder(null)}
+                      ></button>
+                    </div>
+
+                    <div className="modal-body">
+                      <p>
+                        <strong>Order ID:</strong> {selectedOrder.id}
+                      </p>
+
+                      <p>
+                        <strong>Date:</strong> {selectedOrder.date}
+                      </p>
+
+                      <p>
+                        <strong>Status:</strong> {selectedOrder.status}
+                      </p>
+
+                      <p>
+                        <strong>Total Amount:</strong> ₹
+                        {selectedOrder.totalAmount}
+                      </p>
+
+                      <p>
+                        <strong>Customer Name:</strong>{" "}
+                        {selectedOrder.user?.name}
+                      </p>
+
+                      <p>
+                        <strong>Shipping Address:</strong>
+                        <br />
+                        {address && address.length > 0 ? (
+                          <>
+                            {address[0].street}, {address[0].city},{" "}
+                            {address[0].state} - {address[0].pincode}
+                          </>
+                        ) : (
+                          "No Address"
+                        )}
+                      </p>
+                    </div>
+
+                    <div className="modal-footer">
+                      <button
+                        className="btn btn-secondary"
+                        onClick={() => setSelectedOrder(null)}
+                      >
+                        Close
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </div>

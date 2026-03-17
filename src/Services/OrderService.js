@@ -1,7 +1,8 @@
 import axios from "axios";
 import { api } from "./AuthService";
 
-const BASE_URL = "https://ecommerce-production-744f.up.railway.app/order";
+// const BASE_URL = "https://ecommerce-production-744f.up.railway.app/order";
+const BASE_URL="http://localhost:8080/order"
 
 const orderService = {
 
@@ -41,6 +42,10 @@ const orderService = {
     const response = await api.get(`${BASE_URL}/user/${userId}`);
     return response.data;
   },
+  cancelOrder: async (orderId) => {
+  const response = await api.put(`${BASE_URL}/cancel/${orderId}`);
+  return response.data;
+},
 
   // Get all orders (admin)
   getAllOrders: async () => {
